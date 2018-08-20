@@ -6,13 +6,13 @@
 import serial
 from sys import argv
 from sys import exit
+from time import asctime
 
 BAUD_RATE = 9600
 PORT_NAME = "COM3"
-filename = "measures.txt"
 
 def main():
-    global filename
+    filename = "measures.txt"
 
     if len(argv) >= 2:
         filename = argv[1]
@@ -20,19 +20,18 @@ def main():
     try:
         with serial.Serial(PORT_NAME, BAUD_RATE) as ser:
             buff = ''
+            count = 0
             while True:
                 data = ser.readline().decode('utf-8').rstrip('r')
-                buff += data
-
-                count = 0
-                for i in range(len(buff)):
-                    if buff[i] == '\n':
-                        count += 1
+                count += 1
+                buff += asctime() + ': ' + data
+				
                 if count >= 5:
+                    count = 0
                     with open(filename, 'w+') as measures:
                         measures.write(buff)
     except serial.SerialException:
-        exit("You didn't connect Arduino")
+        exit("Connection problem")
 
 
 if __name__ == "__main__":
